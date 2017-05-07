@@ -40,6 +40,8 @@ var contactInfo = function contact(argv) {
 }
 
 var command; //Current command
+var commandHistory=[""];//List of enterred commands
+var histIndex=0; //Current index in the list
 //List of all available commands
 var commandsList={
     "clear":clearOutput,
@@ -58,21 +60,51 @@ function addLine(text) {
     document.getElementById("out").appendChild(newLine);
 }
 
+function getArgs() {
+    argv=[];
+    arr=command.split(" ");
+    for (i=0;i<arr.length;i++) {
+        if (arr[i]!=="") {
+            argv.push(arr[i]);
+        }
+    }
+    return argv;
+}
+
 function handleCommand() {
-   argv=command.split(" ");
-   if (!(argv[0] in commandsList)) {
-       addLine(argv[0]+": command not found");
-       return;
-   }
-   commandsList[argv[0]](argv);
+    argv=getArgs();
+    if (argv.length===0) {
+        return;
+    }
+
+    histIndex=commandHistory.length;
+    commandHistory[histIndex-1]=command;
+    commandHistory.push("");
+
+    if (!(argv[0] in commandsList)) {
+        addLine(argv[0]+": command not found");
+        return;
+    }
+    commandsList[argv[0]](argv);
 }
 
 function onKeyDown(ev) {
-    if (ev.keyCode==13) {
-        var textBox=document.getElementById("commandInp");
+    var textBox=document.getElementById("commandInp");
+    if (ev.keyCode===13) { //Enter key pressed
         command=textBox.value;
         addLine("$ "+command);
         textBox.value="";
         handleCommand();
+    } else if (ev.keyCode===38 && histIndex!==0) { //Up key pressed
+        if (histIndex===commandHistory.length-1) {
+            commandHistory[commandHistory.length-1]=textBox.value;
+        }
+        textBox.value=commandHistory[--histIndex];
+    } else if (ev.keyCode===40 && histIndex<commandHistory.length-1) { //Down key pressed
+        textBox.value=commandHistory[++histIndex];
+    } else if (ev.keyCode===76 && ev.ctrlKey) { //Ctrl + L key pressed
+        ev.preventDefault(); //Avoid trigger default browser shortcut
+        clearOutput();
+        textBox.focus();
     }
 }
