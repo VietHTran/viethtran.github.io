@@ -1,0 +1,35 @@
+body {
+    background-color: #300a24;
+}
+
+input {
+    background-color: #300a24;
+    border: 0px solid;
+    color: white;
+    font-family: "Courier New"; 
+    line-height: 130%;
+    font-size: 18px;
+    width: 90%;
+    display:inline-block;
+}
+
+p {
+    margin-top: 0px;
+    margin-bottom: 0px;
+
+}
+
+*:focus {
+    outline: none;
+}
+
+.container {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    margin-right: 16px;
+    color: white;
+    font-family: "Courier New"; 
+    line-height: 130%;
+    font-size: 18px;
+}
+
