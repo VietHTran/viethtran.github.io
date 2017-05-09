@@ -4,7 +4,8 @@ var userHelp = function help(argv) {
     addLine("github [username] - view a user github profile");
     addLine("intro - print intro message");
     addLine("clear - clear screen");
-    addLine("contact - list of ways to contact me")
+    addLine("contact - list of ways to contact me");
+    addLine("who - about me (flags: edu, name, work, etc.)");
 }
 
 var githubPage = function github(argv) {
@@ -39,6 +40,34 @@ var contactInfo = function contact(argv) {
     addLine("Devpost: VietHTran");
 }
 
+var ownerInfo = function who(argv) {
+    var isPrinted=false;
+    if (argv.indexOf("--name")>-1) {
+        isPrinted=true;
+        addLine("Viet Hung Tran");
+    }
+    if (argv.indexOf("--edu")>-1) {
+        isPrinted=true;
+        addLine("Education: Penn State University    2016-2020    Computer Science    3.72/4.00");
+    }
+    if (argv.indexOf("--work")>-1) {
+        isPrinted=true;
+        addLine("Work Experience:");
+        addLine("Mobile App Intern  (March 2017-Present)");
+        addLine("Penn State Abington Campus");
+        addLine("");
+        addLine("Research Assistant (October 2016-Present)");
+        addLine("Penn State Abington Campus");
+        addLine("");
+        addLine("Computer Lab Assistant (January 2017-Present)");
+        addLine("Penn State Abington Campus");
+        addLine("");
+    }
+    if (!isPrinted) {
+        addLine("Viet Hung Tran\tPSU\t2016-08-21 08:30 (:0)");
+    }
+}
+
 var command; //Current command
 var commandHistory=[""];//List of enterred commands
 var histIndex=0; //Current index in the list
@@ -49,6 +78,7 @@ var commandsList={
     "intro": introMessage,
     "github": githubPage,
     "contact": contactInfo,
+    "who": ownerInfo,
 }; 
 
 function addLine(text) {
