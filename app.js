@@ -85,7 +85,8 @@ var ownerInfo = function (argv) {
 };
 
 var printWorkingDir = function (argv) {
-    println("https://www.github.com/"+currentDir);
+    filePath="VietHTran"+currentDir.substr(1);
+    println("https://www.github.com/"+filePath);
 };
 
 var listFiles = function (argv) {
