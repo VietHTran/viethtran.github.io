@@ -1,14 +1,30 @@
-var userHelp = function help(argv) {
-    addLine("help - this help text");
-    addLine("github - view my github profile");
-    addLine("github [username] - view a user github profile");
-    addLine("intro - print intro message");
-    addLine("clear - clear screen");
-    addLine("contact - list of ways to contact me");
-    addLine("who - about me (flags: edu, name, work, etc.)");
-}
+//TODO: Implement auto complete with Tab
+//TODO: Implement cd command 
 
-var githubPage = function github(argv) {
+var currentDir="~";
+var HOME="~";
+
+var userHelp = function (argv) {
+    println("help - this help text");
+    println("clear - clear screen");
+    println("contact - list of ways to contact me");
+    println("github - view my github profile");
+    println("github [username] - view a user github profile");
+    println("intro - print intro message");
+    println("linkedin - view my linkedin profile");
+    println("ls - view current files in directory");
+    addTab(1);println("--created: view repositiory created time");
+    addTab(1);println("--desc: view repository description");
+    addTab(1);println("--lang: view repositiory main language");
+    addTab(1);println("--updated: view latest updated time");
+    println("pwd - view current directory");
+    println("who - about me");
+    addTab(1);println("--edu: my education information");
+    addTab(1);println("--name: my full name");
+    addTab(1);println("--work: my work experience");
+};
+
+var githubPage = function (argv) {
     var username="VietHTran";
     for (var i=1; i<argv.length; i++) {
         if (argv[i]!="") {
@@ -17,56 +33,100 @@ var githubPage = function github(argv) {
         }
     }
     window.open("https://www.github.com/"+username);
-}
+};
 
-var introMessage = function printIntro(argv) {
-    addLine("Welcome to Tran Shell!");
-    addLine("Type 'help' to view all possible commands.");
-}
+var introMessage = function (argv) {
+    println("Welcome to Tran Shell!");
+    println("Type 'help' to view all possible commands.");
+};
 
-var clearOutput = function clear(argv) {
+var clearOutput = function (argv) {
     var output = document.getElementById("out");
     while (output.firstChild) {
         output.removeChild(output.firstChild);
     }
-}
+};
 
-var contactInfo = function contact(argv) {
-    addLine("Email: vht1@psu.edu");
-    addLine("Alternative email: trantechenterprise@gmail.com");
-    addLine("Linkedin: https://www.linkedin.com/in/viet-tran-8168a3122");
-    addLine("Skype: viet.tran664");
-    addLine("Github: VietHTran");
-    addLine("Devpost: VietHTran");
-}
+var contactInfo = function (argv) {
+    println("Email: vht1@psu.edu");
+    println("Alternative email: trantechenterprise@gmail.com");
+    println("Linkedin: https://www.linkedin.com/in/viet-tran-8168a3122");
+    println("Skype: viet.tran664");
+    println("Github: VietHTran");
+    println("Devpost: VietHTran");
+};
 
-var ownerInfo = function who(argv) {
+var ownerInfo = function (argv) {
     var isPrinted=false;
     if (argv.indexOf("--name")>-1) {
         isPrinted=true;
-        addLine("Viet Hung Tran");
+        println("Viet Hung Tran");
     }
     if (argv.indexOf("--edu")>-1) {
         isPrinted=true;
-        addLine("Education: Penn State University    2016-2020    Computer Science    3.72/4.00");
+        println("Education: Penn State University    2016-2020    Computer Science    3.72/4.00");
     }
     if (argv.indexOf("--work")>-1) {
         isPrinted=true;
-        addLine("Work Experience:");
-        addLine("Mobile App Intern  (March 2017-Present)");
-        addLine("Penn State Abington Campus");
-        addLine("");
-        addLine("Research Assistant (October 2016-Present)");
-        addLine("Penn State Abington Campus");
-        addLine("");
-        addLine("Computer Lab Assistant (January 2017-Present)");
-        addLine("Penn State Abington Campus");
-        addLine("");
+        println("Work Experience:");
+        println("Mobile App Intern  (March 2017-Present)");
+        println("Penn State Abington Campus");
+        println("");
+        println("Research Assistant (October 2016-Present)");
+        println("Penn State Abington Campus");
+        println("");
+        println("Computer Lab Assistant (January 2017-May 2017)");
+        println("Penn State Abington Campus");
+        println("");
     }
     if (!isPrinted) {
-        addLine("Viet Hung Tran\tPSU\t2016-08-21 08:30 (:0)");
+        println("Viet Hung Tran\tPSU\t2016-08-21 08:30 (:0)");
     }
-}
+};
+
+var printWorkingDir = function (argv) {
+    println("https://www.github.com/"+currentDir);
+};
+
+var listFiles = function (argv) {
+    if (currentDir===HOME) {
+        $.getJSON("https://api.github.com/users/VietHTran/repos",function(result){
+            for (var i=0; i<result.length; i++) {
+                println(result[i]["name"]);
+                if (argv.indexOf("--lang")>-1) {
+                    addTab(1);
+                    var lang= result[i]["language"]===null ? "None" : result[i]["language"];
+                    println("Language: "+lang);
+                }
+                if (argv.indexOf("--created")>-1) {
+                    addTab(1);
+                    println("Created: "+result[i]["created_at"]);
+                }
+                if (argv.indexOf("--updated")>-1) {
+                    addTab(1);
+                    println("Updated: "+result[i]["updated_at"]);
+                }
+                if (argv.indexOf("--desc")>-1) {
+                    addTab(1);
+                    var desc= result[i]["description"]===null ? "None" : result[i]["description"];
+                    println("Description: "+desc);
+                }
+            }
+        });
+    } else {
+        filePath="VietHTran"+currentDir.substr(1);
+        url="https://api.github.com/repos/"+currentDir+"/contents";
+        $.getJSON(url,function(result){
+            for (var i=0; i<result.length; i++) {
+                println(result[i]["name"]);
+            }
+        });
+    }
+};
+
+var linkedinPage = function (argv) {
+    window.open("https://www.linkedin.com/in/viet-tran-8168a3122");
+};
 
 var command; //Current command
 var commandHistory=[""];//List of enterred commands
@@ -79,15 +139,32 @@ var commandsList={
     "github": githubPage,
     "contact": contactInfo,
     "who": ownerInfo,
+    "pwd": printWorkingDir,
+    "ls": listFiles,
+    "linkedin": linkedinPage,
 }; 
 
-function addLine(text) {
+function println(text) {
     var newSpan = document.createElement("SPAN");
     var newLine = document.createElement("BR");
     var textNode = document.createTextNode(text);
     newSpan.appendChild(textNode);
     document.getElementById("out").appendChild(newSpan);
     document.getElementById("out").appendChild(newLine);
+}
+
+function print(text) {
+    var newSpan = document.createElement("SPAN");
+    var textNode = document.createTextNode(text);
+    newSpan.appendChild(textNode);
+    document.getElementById("out").appendChild(newSpan);
+}
+
+function addTab(tabs) {
+    var newSpan = document.createElement("SPAN");
+    var space=tabs*40;
+    newSpan.style.marginLeft=""+space+"px";
+    document.getElementById("out").appendChild(newSpan);
 }
 
 function getArgs() {
@@ -112,7 +189,7 @@ function handleCommand() {
     commandHistory.push("");
 
     if (!(argv[0] in commandsList)) {
-        addLine(argv[0]+": command not found");
+        println(argv[0]+": command not found");
         return;
     }
     commandsList[argv[0]](argv);
@@ -122,7 +199,7 @@ function onKeyDown(ev) {
     var textBox=document.getElementById("commandInp");
     if (ev.keyCode===13) { //Enter key pressed
         command=textBox.value;
-        addLine("$ "+command);
+        println(currentDir+"$ "+command);
         textBox.value="";
         handleCommand();
     } else if (ev.keyCode===38 && histIndex!==0) { //Up key pressed
