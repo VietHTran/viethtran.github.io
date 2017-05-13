@@ -132,18 +132,102 @@ var linkedinPage = function (argv) {
 var command; //Current command
 var commandHistory=[""];//List of enterred commands
 var histIndex=0; //Current index in the list
+
+var tabHits=0; //Number of times the user hit tab
+var possibilities=[] //List of possibilities for auto completion
+var HEAD="head";
+
 //List of all available commands
 var commandsList={
-    "clear":clearOutput,
-    "help": userHelp,
-    "intro": introMessage,
-    "github": githubPage,
-    "contact": contactInfo,
-    "who": ownerInfo,
-    "pwd": printWorkingDir,
-    "ls": listFiles,
-    "linkedin": linkedinPage,
-}; 
+    "clear": clearOutput,           
+    "help": userHelp,             
+    "intro": introMessage,         
+    "github": githubPage,          
+    "contact": contactInfo,        
+    "who": ownerInfo,            
+    "pwd": printWorkingDir,      
+    "ls": listFiles,            
+    "linkedin": linkedinPage,         
+};
+
+//List of all commands with flags 
+var PS_ARGS= {
+    "head" : ["clear","help","intro","github","contact","who","pwd","ls","linkedin"],
+    "ls": ["--created","--desc","--lang","--updated"],
+    "who": ["--edu","--name","--work"],
+}
+
+//Check if sub is prefix of str
+function isPrefix(sub,str) {
+    return str.lastIndexOf(sub,0)===0;
+}
+
+//Get minimum possible autocompletion for string sub based on stringlist
+function getAutoComplete(sub,stringlist) {
+    var res=stringlist[0].substr(sub.length);
+    for (var i=1;i<stringlist.length;++i) {
+        if (res==="") {break;}
+        var tail=stringlist[i].substr(sub.length);
+        var len=res.length>tail.length ? tail.length : res.length;
+        for (var j=0; j<len; ++j) {
+            if (res.charAt(j)!==tail.charAt(j)) {
+                res=res.substr(0,j);
+                break;
+            }
+        }
+    }
+    return res;
+}
+
+//Check possibilities to autocomplete a command
+function checkPoss() {
+    var textBox=document.getElementById("commandInp");
+    command=textBox.value;
+    argv=getArgs();
+    if (argv.length===0) {
+        return;
+    } else {
+        var poss=[], suffix="", index=0;
+        var availableArgs;
+        if (argv.length===1) {
+            availableArgs=PS_ARGS[HEAD];
+        } else {
+            if ((argv[0] in commandsList) && 
+                    (argv[0] in PS_ARGS) && 
+                    (argv[0] !== HEAD)) {
+                availableArgs=PS_ARGS[argv[0]];
+                index=argv.length-1;
+            } else {
+                return;
+            }
+        }
+        for (var i=0; i<availableArgs.length; ++i) {
+            if (isPrefix(argv[index],availableArgs[i])) {
+                poss.push(availableArgs[i]);
+            }
+        }
+        suffix=getAutoComplete(argv[index],poss);
+        if (suffix==="") {
+            ++tabHits;
+        } else {
+            tabHits=0;
+            textBox.value+=suffix;
+            return;
+        }
+
+        if (tabHits>=2 && poss.length>1) {
+            ++tabHits;
+            println(currentDir+"$ "+command);
+            for (var i=0; i<poss.length; ++i) {
+                println(poss[i]);
+            }
+        }
+    }
+}
+
+function gotoBottom() {
+    window.scrollTo(0,document.body.scrollHeight);
+}
 
 function println(text) {
     var newSpan = document.createElement("SPAN");
@@ -152,6 +236,7 @@ function println(text) {
     newSpan.appendChild(textNode);
     document.getElementById("out").appendChild(newSpan);
     document.getElementById("out").appendChild(newLine);
+    gotoBottom();
 }
 
 function print(text) {
@@ -203,6 +288,7 @@ function onKeyDown(ev) {
         println(currentDir+"$ "+command);
         textBox.value="";
         handleCommand();
+        textBox.focus();
     } else if (ev.keyCode===38 && histIndex!==0) { //Up key pressed
         if (histIndex===commandHistory.length-1) {
             commandHistory[commandHistory.length-1]=textBox.value;
@@ -214,5 +300,8 @@ function onKeyDown(ev) {
         ev.preventDefault(); //Avoid trigger default browser shortcut
         clearOutput();
         textBox.focus();
+    } else if (ev.keyCode===9) {
+        ev.preventDefault(); //Avoid trigger default browser shortcut
+        checkPoss();
     }
 }
