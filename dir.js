@@ -1,5 +1,5 @@
 var fileHierarchy={};
-const API_PREFIX="http://api.github.com/";
+const API_PREFIX="https://api.github.com/";
 
 function  getRepos() {
     $.getJSON(API_PREFIX+"users/viethtran/repos", function (result) {
