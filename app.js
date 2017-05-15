@@ -1,5 +1,5 @@
-//TODO: Implement auto complete with Tab
 //TODO: Implement cd command 
+//TODO: Download file hierarchy
 
 var currentDir="~";
 var HOME="~";
@@ -92,6 +92,10 @@ var printWorkingDir = function (argv) {
 var listFiles = function (argv) {
     if (currentDir===HOME) {
         $.getJSON("https://api.github.com/users/VietHTran/repos",function(result){
+            if (result["message"]==="Not Found") {
+                println("Error getting data from github");
+                return;
+            }
             for (var i=0; i<result.length; i++) {
                 println(result[i]["name"]);
                 if (argv.indexOf("--lang")>-1) {
@@ -305,3 +309,4 @@ function onKeyDown(ev) {
         checkPoss();
     }
 }
+
