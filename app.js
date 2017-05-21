@@ -1,5 +1,4 @@
 //TODO: Implement cd command 
-//TODO: Download file hierarchy
 
 var currentDir="~";
 var HOME="~";
@@ -13,10 +12,10 @@ var userHelp = function (argv) {
     println("intro - print intro message");
     println("linkedin - view my linkedin profile");
     println("ls - view current files in directory");
-    addTab(1);println("--created: view repositiory created time");
-    addTab(1);println("--desc: view repository description");
-    addTab(1);println("--lang: view repositiory main language");
-    addTab(1);println("--updated: view latest updated time");
+    addTab(1);println("--created: view repositiory created time (home directory only)");
+    addTab(1);println("--desc: view repository description (home directory only)");
+    addTab(1);println("--lang: view repositiory main language (home directory only)");
+    addTab(1);println("--updated: view latest updated time (home directory only)");
     println("pwd - view current directory");
     println("who - about me");
     addTab(1);println("--edu: my education information");
@@ -243,6 +242,97 @@ function println(text) {
     gotoBottom();
 }
 
+//Get argument path
+function getPath(argv) {
+    var pathIndex=0, startIndex=-1;
+    var isSlashFound=false;
+    for (var i=0; i<command.length; ++i) {
+        if (command.charAt(i)==="/" ||
+                (command.charAt(i)==="~" &&
+                (i===-1 || i===0))) { 
+            isSlashFound=true; 
+        }
+        if (command.charAt(i)===" " &&
+                !(i>0 && command.charAt(i-1)==="\\")) {
+            if (isSlashFound) {
+                startIndex= startIndex===-1 ? 0 : startIndex;
+                return command.substr(startIndex,i);
+            } else {
+                startIndex=-1;
+            }
+        }
+        if (startIndex===-1 && command.charAt(i)!==" ") {
+            startIndex=i;
+        }
+    }
+    if (!isSlashFound) { return "-1"; }
+    return command.substr(startIndex,command.length);
+}
+
+//Delete all backslash
+function reformatPath(str) {
+    return str.replace(/\\\//g, "/");
+}
+
+//Fetch JSON data from the web
+function fetchJSON(url) {
+    var data;
+    $.getJSON(url,function(result){
+            data= result;
+    });
+    return data;
+}
+
+//Get repository contents URL
+function getContentURL(pathLst) {
+    if (pathLst.length===0) {return;}
+    if (pathLst.length===1 && 
+            pathLst[0].toLowerCase() ==="viethtran") {
+        return "https://api.github.com/users/VietHTran/repos";
+    } else {
+        var urlPref="https://api.github.com/repos/VietHTran/"+pathLst[1];
+        var i=2;
+        urlPref+="/contents/";
+        for (; i<pathLst.length; ++i) {
+            urlPref+=pathLst[i]+"/";
+        }
+        return urlPref;
+    }
+}
+
+//Check if current path is correct
+function validatePath(argv) {
+    var path=getPath();
+    if (path==="-1" || path.length===0) { return; }
+    if (path.charAt(0)==="/") {
+        println("Root access denied");
+        return;
+    }
+    var dirs=path.split("/");
+    var pathIndex=-1, index=0, navDir=null;
+    if (path[0]==="~") {
+        navDir=["VietHTran"];
+        index=1;
+    } else {
+        var currentDirLst="VietHTran/"+currentDir.substr(1);
+        navDir=currentDirLst.split("/");
+    }
+    for (;index<dirs.length;++index) {
+        navDir.push(reformatPath(dirs[index]));
+    }
+    var pathUrl=getContentURL(dirs);
+    console.log("Path url: "+pathUrl);
+    var jsonRes=fetchJSON();
+    if (typeof(jsonRes)==="undefined" || 
+            (("message" in jsonRes) &&
+            jsonRes["message"]==="Not Found")) {
+        println(path+" is not a dir");
+        return false;
+    }
+    println(path+" is a dir");
+    return true;
+}
+
 function print(text) {
     var newSpan = document.createElement("SPAN");
     var textNode = document.createTextNode(text);
@@ -275,8 +365,14 @@ function handleCommand() {
     }
 
     histIndex=commandHistory.length;
-    commandHistory[histIndex-1]=command;
-    commandHistory.push("");
+    if (histIndex>1 &&
+            commandHistory[histIndex-1]===commandHistory[histIndex-2]) {
+        commandHistory[histIndex-1]="";
+    } else {
+        commandHistory[histIndex-1]=command;
+        commandHistory.push("");
+    }
+
 
     if (!(argv[0] in commandsList)) {
         println(argv[0]+": command not found");
@@ -293,6 +389,7 @@ function onKeyDown(ev) {
         textBox.value="";
         handleCommand();
         textBox.focus();
+        validatePath("~/C-commons/collections");
     } else if (ev.keyCode===38 && histIndex!==0) { //Up key pressed
         if (histIndex===commandHistory.length-1) {
             commandHistory[commandHistory.length-1]=textBox.value;
