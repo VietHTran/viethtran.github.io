@@ -274,22 +274,17 @@ function reformatPath(str) {
     return str.replace(/\\\//g, "/");
 }
 
-//Fetch JSON data from the web
-function fetchJSON(url) {
-    var data;
-    $.getJSON(url,function(result){
-            data= result;
-    });
-    return data;
-}
-
 //Get repository contents URL
 function getContentURL(pathLst) {
     if (pathLst.length===0) {return;}
     if (pathLst.length===1 && 
-            pathLst[0].toLowerCase() ==="viethtran") {
+            pathLst[0] === "VietHTran") {
         return "https://api.github.com/users/VietHTran/repos";
     } else {
+        if (pathLst[0] !== "VietHTran") {
+            println("Access to user "+pathLst[0]+" denied");
+            return;
+        }
         var urlPref="https://api.github.com/repos/VietHTran/"+pathLst[1];
         var i=2;
         urlPref+="/contents/";
@@ -300,13 +295,11 @@ function getContentURL(pathLst) {
     }
 }
 
-//Check if current path is correct
-function validatePath(argv) {
-    var path=getPath();
-    if (path==="-1" || path.length===0) { return; }
+function getDirHierarchy(path) {
+    if (path==="-1" || path.length===0) { return "-1"; }
     if (path.charAt(0)==="/") {
         println("Root access denied");
-        return;
+        return "-1";
     }
     var dirs=path.split("/");
     var pathIndex=-1, index=0, navDir=null;
@@ -314,23 +307,35 @@ function validatePath(argv) {
         navDir=["VietHTran"];
         index=1;
     } else {
-        var currentDirLst="VietHTran/"+currentDir.substr(1);
+        var currentDirLst="VietHTran"+currentDir.substr(1);
         navDir=currentDirLst.split("/");
     }
     for (;index<dirs.length;++index) {
+        if (dirs[index]==="" && 
+                index+1===dirs.length) { continue; }
         navDir.push(reformatPath(dirs[index]));
     }
-    var pathUrl=getContentURL(dirs);
-    console.log("Path url: "+pathUrl);
-    var jsonRes=fetchJSON();
-    if (typeof(jsonRes)==="undefined" || 
-            (("message" in jsonRes) &&
-            jsonRes["message"]==="Not Found")) {
-        println(path+" is not a dir");
-        return false;
+    return getContentURL(navDir);
+}
+
+//Check if current path is correct
+function validatePath(argv) {
+    var path=getPath();
+    var pathUrl=getDirHierarchy(path);
+    if (pathUrl==="-1") {
+        println("bash: "+path+": No such file or directory");
     }
-    println(path+" is a dir");
-    return true;
+    $.getJSON(pathUrl,function(result){
+        if (typeof(result)==="undefined" ||
+                (("message" in result) &&
+                result["message"]==="Not Found")) {
+            println("bash: "+path+": No such file or directory");
+        } else {
+            println("bash: "+path+": Is a directory");
+        }
+    }).fail(function () {
+        println("bash: "+path+": No such file or directory");
+    });
 }
 
 function print(text) {
@@ -373,9 +378,12 @@ function handleCommand() {
         commandHistory.push("");
     }
 
-
     if (!(argv[0] in commandsList)) {
-        println(argv[0]+": command not found");
+        if (argv[0].indexOf("/")!==-1) {
+            validatePath(argv);
+        } else {
+            println(argv[0]+": command not found");
+        }
         return;
     }
     commandsList[argv[0]](argv);
@@ -389,7 +397,6 @@ function onKeyDown(ev) {
         textBox.value="";
         handleCommand();
         textBox.focus();
-        validatePath("~/C-commons/collections");
     } else if (ev.keyCode===38 && histIndex!==0) { //Up key pressed
         if (histIndex===commandHistory.length-1) {
             commandHistory[commandHistory.length-1]=textBox.value;
