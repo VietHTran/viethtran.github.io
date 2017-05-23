@@ -11,10 +11,11 @@ var userHelp = function (argv) {
     println("github [username] - view a user github profile");
     println("intro - print intro message");
     println("linkedin - view my linkedin profile");
-    println("ls - view current files in directory");
+    println("ls [directory] - view files in current or specified directory");
     addTab(1);println("--created: view repositiory created time (home directory only)");
     addTab(1);println("--desc: view repository description (home directory only)");
     addTab(1);println("--lang: view repositiory main language (home directory only)");
+    addTab(1);println("--type: display file type");
     addTab(1);println("--updated: view latest updated time (home directory only)");
     println("pwd - view current directory");
     println("who - about me");
@@ -88,43 +89,64 @@ var printWorkingDir = function (argv) {
     println("https://www.github.com/"+filePath);
 };
 
+//Fetching JSON data unsucessfully
+function fetchFail(message) {
+    return function () { println(message);  }
+}
+
 var listFiles = function (argv) {
-    if (currentDir===HOME) {
+    var pathStr=getPath();
+    var pathUrl=getDirHierarchy(pathStr);
+    if ((currentDir===HOME && pathStr==="-1") || 
+            pathUrl==="https://api.github.com/users/VietHTran/repos") {
         $.getJSON("https://api.github.com/users/VietHTran/repos",function(result){
             if (result["message"]==="Not Found") {
-                println("Error getting data from github");
+                println("Error fetching data from github");
                 return;
             }
-            for (var i=0; i<result.length; i++) {
+            var isLang=(argv.indexOf("--lang")>-1);
+            var isCreated=(argv.indexOf("--created")>-1);
+            var isUpdated=(argv.indexOf("--updated")>-1);
+            var isDesc=(argv.indexOf("--desc")>-1);
+            var isType=(argv.indexOf("--type")>-1);
+            for (var i=0; i<result.length; ++i) {
                 println(result[i]["name"]);
-                if (argv.indexOf("--lang")>-1) {
+                if (isLang) {
                     addTab(1);
                     var lang= result[i]["language"]===null ? "None" : result[i]["language"];
                     println("Language: "+lang);
                 }
-                if (argv.indexOf("--created")>-1) {
+                if (isCreated) {
                     addTab(1);
                     println("Created: "+result[i]["created_at"]);
                 }
-                if (argv.indexOf("--updated")>-1) {
+                if (isUpdated) {
                     addTab(1);
                     println("Updated: "+result[i]["updated_at"]);
                 }
-                if (argv.indexOf("--desc")>-1) {
+                if (isDesc) {
                     addTab(1);
                     var desc= result[i]["description"]===null ? "None" : result[i]["description"];
                     println("Description: "+desc);
                 }
+                if (isType) {
+                    addTab(1);
+                    println("Type: dir");
+                }
             }
-        });
-    } else {
-        filePath="VietHTran"+currentDir.substr(1);
-        url="https://api.github.com/repos/"+currentDir+"/contents";
-        $.getJSON(url,function(result){
-            for (var i=0; i<result.length; i++) {
+        }).fail(fetchFail("Error fetching data from Github"));
+    } else if (pathStr!=="-1") {
+        $.getJSON(pathUrl,function(result){
+            var isType=(argv.indexOf("--type")>-1);
+            for (var i=0; i<result.length; ++i)  {
                 println(result[i]["name"]);
+                if (isType) {
+                    addTab(1);
+                    var type= result[i]["type"]==="dir" ? "dir" : "file";
+                    println("Type: "+type);
+                }
             }
-        });
+        }).fail(fetchFail("ls: cannot access \'"+pathStr+"\': No such file or directory"));
     }
 };
 
@@ -256,7 +278,8 @@ function getPath(argv) {
                 !(i>0 && command.charAt(i-1)==="\\")) {
             if (isSlashFound) {
                 startIndex= startIndex===-1 ? 0 : startIndex;
-                return command.substr(startIndex,i);
+                console.log("path: "+command.substr(startIndex,i-startIndex));
+                return command.substr(startIndex,i-startIndex);
             } else {
                 startIndex=-1;
             }
@@ -266,7 +289,7 @@ function getPath(argv) {
         }
     }
     if (!isSlashFound) { return "-1"; }
-    return command.substr(startIndex,command.length);
+    return command.substr(startIndex,command.length-startIndex);
 }
 
 //Delete all backslash
@@ -313,7 +336,18 @@ function getDirHierarchy(path) {
     for (;index<dirs.length;++index) {
         if (dirs[index]==="" && 
                 index+1===dirs.length) { continue; }
-        navDir.push(reformatPath(dirs[index]));
+        switch (dirs[index]) {
+            case "..":
+                if (navDir.length===0) {
+                    println("Root access denied");
+                    return "-1";
+                }
+                navDir.pop();
+            case ".":
+                continue;
+            default:
+                navDir.push(reformatPath(dirs[index]));
+        }
     }
     return getContentURL(navDir);
 }
@@ -322,19 +356,19 @@ function getDirHierarchy(path) {
 function validatePath(argv) {
     var path=getPath();
     var pathUrl=getDirHierarchy(path);
-    if (pathUrl==="-1") {
-        println("bash: "+path+": No such file or directory");
+    if (pathUrl==="-1" || pathUrl==="-1") {
+        return;
     }
     $.getJSON(pathUrl,function(result){
         if (typeof(result)==="undefined" ||
                 (("message" in result) &&
                 result["message"]==="Not Found")) {
-            println("bash: "+path+": No such file or directory");
+            println("jash: "+path+": No such file or directory");
         } else {
-            println("bash: "+path+": Is a directory");
+            println("jash: "+path+": Is a directory");
         }
     }).fail(function () {
-        println("bash: "+path+": No such file or directory");
+        println("jash: "+path+": No such file or directory");
     });
 }
 
