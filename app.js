@@ -95,7 +95,14 @@ function fetchFail(message) {
 }
 
 var listFiles = function (argv) {
-    var pathStr=getPath();
+    var invalidFlag=validateFlag(argv);
+    if (invalidFlag!=="1") {
+        alertInvalidFlag(argv[0],invalidFlag);
+        return;
+    }
+    //var pathStr=getPath();
+    var pathStr=getTolerantPath(argv);
+    console.log("pathStr: "+pathStr);
     var pathUrl=getDirHierarchy(pathStr);
     if ((currentDir===HOME && pathStr==="-1") || 
             pathUrl==="https://api.github.com/users/VietHTran/repos") {
@@ -135,8 +142,12 @@ var listFiles = function (argv) {
                 }
             }
         }).fail(fetchFail("Error fetching data from Github"));
-    } else if (pathStr!=="-1") {
+    } else if (pathStr!=="-1" && pathUrl!=="-1") {
         $.getJSON(pathUrl,function(result){
+            if ("type" in result) {
+                println(pathStr);
+                return;
+            }
             var isType=(argv.indexOf("--type")>-1);
             for (var i=0; i<result.length; ++i)  {
                 println(result[i]["name"]);
@@ -147,6 +158,8 @@ var listFiles = function (argv) {
                 }
             }
         }).fail(fetchFail("ls: cannot access \'"+pathStr+"\': No such file or directory"));
+    } else {
+        return;
     }
 };
 
@@ -178,7 +191,7 @@ var commandsList={
 //List of all commands with flags 
 var PS_ARGS= {
     "head" : ["clear","help","intro","github","contact","who","pwd","ls","linkedin"],
-    "ls": ["--created","--desc","--lang","--updated"],
+    "ls": ["--created","--desc","--lang","--updated","--type"],
     "who": ["--edu","--name","--work"],
 }
 
@@ -239,7 +252,6 @@ function checkPoss() {
             textBox.value+=suffix;
             return;
         }
-
         if (tabHits>=2 && poss.length>1) {
             ++tabHits;
             println(currentDir+"$ "+command);
@@ -254,6 +266,27 @@ function gotoBottom() {
     window.scrollTo(0,document.body.scrollHeight);
 }
 
+function isFlag(str) {
+    return str.length>2 && str[0]==="-" && str[1]==="-";
+}
+
+function validateFlag(argv) {
+    if (!(argv[0] in PS_ARGS)) { return; }
+    for (var i=0; i<argv.length; ++i) {
+        if (!isFlag(argv[i])) {
+            continue;
+        } else if (!(argv[i] in PS_ARGS[argv[0]])) {
+            return argv[i];
+        }
+    }
+    return "1";
+}
+
+function alertInvalidFlag(command,flag) {
+    println(command+": unrecognized option \'"+flag+"\'");
+    println("Try \'help\' for more information.");
+}
+
 function println(text) {
     var newSpan = document.createElement("SPAN");
     var newLine = document.createElement("BR");
@@ -262,6 +295,20 @@ function println(text) {
     document.getElementById("out").appendChild(newSpan);
     document.getElementById("out").appendChild(newLine);
     gotoBottom();
+}
+
+//Get argument path without slash by check the commons flags
+function getTolerantPath(argv) {
+    var pathT="";
+    for (var i=1; i<argv.length; ++i) {
+        if (isFlag(argv[i])) {continue;}
+        pathT+=argv[i];
+        if (argv[i].charAt(argv.length-1)==="\\") {
+            continue;
+        }
+        break;
+    }
+    return pathT==="" ? "-1" : pathT;
 }
 
 //Get argument path
@@ -360,6 +407,10 @@ function validatePath(argv) {
         return;
     }
     $.getJSON(pathUrl,function(result){
+        if ("type" in result) {
+            println("jash: "+path+": Permission denied");
+            return;
+        }
         if (typeof(result)==="undefined" ||
                 (("message" in result) &&
                 result["message"]==="Not Found")) {
