@@ -1,10 +1,10 @@
-//TODO: Implement cd command 
-
 var currentDir="~";
 var HOME="~";
+var HOME_URL="https://api.github.com/users/viethtran/repos";
 
 var userHelp = function (argv) {
     println("help - this help text");
+    println("cd - change current directory");
     println("clear - clear screen");
     println("contact - list of ways to contact me");
     println("github - view my github profile");
@@ -100,13 +100,16 @@ var listFiles = function (argv) {
         alertInvalidFlag(argv[0],invalidFlag);
         return;
     }
-    //var pathStr=getPath();
     var pathStr=getTolerantPath(argv);
-    console.log("pathStr: "+pathStr);
-    var pathUrl=getDirHierarchy(pathStr);
-    if ((currentDir===HOME && pathStr==="-1") || 
-            pathUrl==="https://api.github.com/users/VietHTran/repos") {
-        $.getJSON("https://api.github.com/users/VietHTran/repos",function(result){
+    var pathUrl;
+    if (pathStr==="-1") {
+        pathUrl=getDirHierarchy(currentDir);
+    } else {
+        pathUrl=getDirHierarchy(pathStr);
+    }
+
+    if (pathUrl==="https://api.github.com/users/VietHTran/repos") {
+        $.getJSON(pathUrl,function(result){
             if (result["message"]==="Not Found") {
                 println("Error fetching data from github");
                 return;
@@ -142,7 +145,7 @@ var listFiles = function (argv) {
                 }
             }
         }).fail(fetchFail("Error fetching data from Github"));
-    } else if (pathStr!=="-1" && pathUrl!=="-1") {
+    } else if (pathUrl!=="-1") {
         $.getJSON(pathUrl,function(result){
             if ("type" in result) {
                 println(pathStr);
@@ -163,6 +166,46 @@ var listFiles = function (argv) {
     }
 };
 
+function updateDir(pathUrl) {
+    var REPO_INDEX=5, DIR_INDEX=7, TYPE_INDEX=3;
+    var dirLst=pathUrl.split("/");
+    var newDir="~";
+    if (!(dirLst.length<=REPO_INDEX ||
+            (dirLst[TYPE_INDEX]==="users" && 
+             dirLst[REPO_INDEX]==="repos"))) {
+        newDir+="/"+dirLst[REPO_INDEX];
+        for (var i=DIR_INDEX; i<dirLst.length; ++i) {
+            if (dirLst[i]==="") {break;}
+            newDir+="/"+dirLst[i];
+        }
+    }
+    currentDir=newDir;
+    document.getElementById("dir").innerHTML=currentDir+"$ ";
+}
+
+var changeDir = function (argv) {
+    var invalidFlag=validateFlag(argv);
+    if (invalidFlag!=="1") {
+        alertInvalidFlag(argv[0],invalidFlag);
+        return;
+    }
+    if (argv.length===1) {
+        currentDir=HOME;
+        document.getElementById("dir").innerHTML=currentDir+"$ ";
+        return;
+    }
+    var pathStr=getTolerantPath(argv);
+    var pathUrl=getDirHierarchy(pathStr);
+    if (pathStr==="-1" || pathUrl==="-1") { return; }
+    $.getJSON(pathUrl, function(result) {
+        if ("type" in result && result["type"]==="file") {
+            println("jash: cd: "+pathStr+": Not a directory");
+            return;
+        }
+        updateDir(pathUrl);
+    }).fail(fetchFail("jash: cd: "+pathStr+": No such file or directory"));
+};
+
 var linkedinPage = function (argv) {
     window.open("https://www.linkedin.com/in/viet-tran-8168a3122");
 };
@@ -177,6 +220,7 @@ var HEAD="head";
 
 //List of all available commands
 var commandsList={
+    "cd": changeDir,
     "clear": clearOutput,           
     "help": userHelp,             
     "intro": introMessage,         
@@ -190,7 +234,8 @@ var commandsList={
 
 //List of all commands with flags 
 var PS_ARGS= {
-    "head" : ["clear","help","intro","github","contact","who","pwd","ls","linkedin"],
+    "cd": [],
+    "head" : ["cd","clear","help","intro","github","contact","who","pwd","ls","linkedin"],
     "ls": ["--created","--desc","--lang","--updated","--type"],
     "who": ["--edu","--name","--work"],
 }
@@ -202,6 +247,7 @@ function isPrefix(sub,str) {
 
 //Get minimum possible autocompletion for string sub based on stringlist
 function getAutoComplete(sub,stringlist) {
+    if (stringlist.length===0) { return "-1"; }
     var res=stringlist[0].substr(sub.length);
     for (var i=1;i<stringlist.length;++i) {
         if (res==="") {break;}
@@ -245,6 +291,7 @@ function checkPoss() {
             }
         }
         suffix=getAutoComplete(argv[index],poss);
+        if (suffix==="-1") { return; }
         if (suffix==="") {
             ++tabHits;
         } else {
@@ -275,7 +322,7 @@ function validateFlag(argv) {
     for (var i=0; i<argv.length; ++i) {
         if (!isFlag(argv[i])) {
             continue;
-        } else if (!(argv[i] in PS_ARGS[argv[0]])) {
+        } else if (!(PS_ARGS[argv[0]].includes(argv[i]))) {
             return argv[i];
         }
     }
@@ -325,7 +372,6 @@ function getPath(argv) {
                 !(i>0 && command.charAt(i-1)==="\\")) {
             if (isSlashFound) {
                 startIndex= startIndex===-1 ? 0 : startIndex;
-                console.log("path: "+command.substr(startIndex,i-startIndex));
                 return command.substr(startIndex,i-startIndex);
             } else {
                 startIndex=-1;
@@ -385,7 +431,7 @@ function getDirHierarchy(path) {
                 index+1===dirs.length) { continue; }
         switch (dirs[index]) {
             case "..":
-                if (navDir.length===0) {
+                if (navDir.length===1) {
                     println("Root access denied");
                     return "-1";
                 }
