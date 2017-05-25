@@ -4,7 +4,7 @@ var HOME_URL="https://api.github.com/users/viethtran/repos";
 
 var userHelp = function (argv) {
     println("help - this help text");
-    println("cd - change current directory");
+    println("cd [directory] - change current directory");
     println("clear - clear screen");
     println("contact - list of ways to contact me");
     println("github - view my github profile");
