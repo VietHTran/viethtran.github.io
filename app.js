@@ -20,7 +20,7 @@ var userHelp = function (argv) {
     addTab(1);println("--updated: view latest updated time (home directory only)");
     println("pwd - view current directory");
     println("who - about me");
-    println("xgd-open [file] - open a file in new tab");
+    println("xdg-open [file] - open a file in new tab");
     addTab(1);println("--edu: my education information");
     addTab(1);println("--name: my full name");
     addTab(1);println("--work: my work experience");
