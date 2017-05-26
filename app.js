@@ -1,6 +1,7 @@
 var currentDir="~";
 var HOME="~";
-var HOME_URL="https://api.github.com/users/viethtran/repos";
+var HOME_URL="https://api.github.com/users/VietHTran/repos";
+var HOME_HTML_URL="https://www.github.com/VietHTran";
 
 var userHelp = function (argv) {
     println("help - this help text");
@@ -19,6 +20,7 @@ var userHelp = function (argv) {
     addTab(1);println("--updated: view latest updated time (home directory only)");
     println("pwd - view current directory");
     println("who - about me");
+    println("xgd-open [file] - open a file in new tab");
     addTab(1);println("--edu: my education information");
     addTab(1);println("--name: my full name");
     addTab(1);println("--work: my work experience");
@@ -166,7 +168,7 @@ var listFiles = function (argv) {
     }
 };
 
-function updateDir(pathUrl) {
+function getNewDir(pathUrl) {
     var REPO_INDEX=5, DIR_INDEX=7, TYPE_INDEX=3;
     var dirLst=pathUrl.split("/");
     var newDir="~";
@@ -179,7 +181,11 @@ function updateDir(pathUrl) {
             newDir+="/"+dirLst[i];
         }
     }
-    currentDir=newDir;
+    return newDir;
+}
+
+function updateDir(pathUrl) {
+    currentDir=getNewDir(pathUrl);
     document.getElementById("dir").innerHTML=currentDir+"$ ";
 }
 
@@ -206,6 +212,30 @@ var changeDir = function (argv) {
     }).fail(fetchFail("jash: cd: "+pathStr+": No such file or directory"));
 };
 
+var openFile = function (argv) {
+    var invalidFlag=validateFlag(argv);
+    if (invalidFlag!=="1") {
+        alertInvalidFlag(argv[0],invalidFlag);
+        return;
+    }
+    if (argv.length===1) {
+        window.open(HOME_HTML_URL);
+        return;
+    }
+    var pathStr=getTolerantPath(argv);
+    var pathUrl=getDirHierarchy(pathStr);
+    if (pathStr==="-1" || pathUrl==="-1") { return; }
+    $.getJSON(pathUrl, function(result) {
+        if (("type" in result) && 
+                (result["type"]==="file")) {
+            window.open(result["html_url"]);
+            return;
+        }
+        var newDir=getNewDir(pathUrl);
+        window.open(HOME_HTML_URL+newDir.substr(1));
+    }).fail(fetchFail("gvfs-open: "+pathStr+": error openning location: Error when getting information for file \'"+getNewDir(pathUrl)+"\': No such file or directory"));
+};
+
 var linkedinPage = function (argv) {
     window.open("https://www.linkedin.com/in/viet-tran-8168a3122");
 };
@@ -230,6 +260,7 @@ var commandsList={
     "pwd": printWorkingDir,      
     "ls": listFiles,            
     "linkedin": linkedinPage,         
+    "xdg-open": openFile,
 };
 
 //List of all commands with flags 
@@ -238,6 +269,7 @@ var PS_ARGS= {
     "head" : ["cd","clear","help","intro","github","contact","who","pwd","ls","linkedin"],
     "ls": ["--created","--desc","--lang","--updated","--type"],
     "who": ["--edu","--name","--work"],
+    "xdg-open": [],
 }
 
 //Check if sub is prefix of str
