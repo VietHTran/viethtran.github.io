@@ -20,10 +20,10 @@ var userHelp = function (argv) {
     addTab(1);println("--updated: view latest updated time (home directory only)");
     println("pwd - view current directory");
     println("who - about me");
-    println("xdg-open [file] - open a file in new tab");
     addTab(1);println("--edu: my education information");
     addTab(1);println("--name: my full name");
     addTab(1);println("--work: my work experience");
+    println("xdg-open [file] - open a file in new tab");
 };
 
 var githubPage = function (argv) {
@@ -266,7 +266,7 @@ var commandsList={
 //List of all commands with flags 
 var PS_ARGS= {
     "cd": [],
-    "head" : ["cd","clear","help","intro","github","contact","who","pwd","ls","linkedin"],
+    "head" : ["cd","clear","help","intro","github","contact","who","pwd","ls","linkedin","xdg-open"],
     "ls": ["--created","--desc","--lang","--updated","--type"],
     "who": ["--edu","--name","--work"],
     "xdg-open": [],
