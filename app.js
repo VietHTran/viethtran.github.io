@@ -232,7 +232,7 @@ var openFile = function (argv) {
             return;
         }
         var newDir=getNewDir(pathUrl);
-        window.open(HOME_HTML_URL+newDir.substr(1));
+        window.open(HOME_HTML_URL+"/blob/master/"+newDir.substr(1));
     }).fail(fetchFail("gvfs-open: "+pathStr+": error openning location: Error when getting information for file \'"+getNewDir(pathUrl)+"\': No such file or directory"));
 };
 
