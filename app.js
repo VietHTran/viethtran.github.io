@@ -231,8 +231,14 @@ var openFile = function (argv) {
             window.open(result["html_url"]);
             return;
         }
-        var newDir=getNewDir(pathUrl);
-        window.open(HOME_HTML_URL+"/blob/master/"+newDir.substr(1));
+        var newDir=getNewDir(pathUrl).substr(2);
+        var repoIndex=newDir.indexOf("/");
+        if (repoIndex===-1) {
+            window.open(HOME_HTML_URL+"/"+newDir);
+        } else {
+            window.open(HOME_HTML_URL+"/"+newDir.substr(0,repoIndex)+"/blob/master/"+newDir.substr(repoIndex+1));
+        }
+
     }).fail(fetchFail("gvfs-open: "+pathStr+": error openning location: Error when getting information for file \'"+getNewDir(pathUrl)+"\': No such file or directory"));
 };
 
