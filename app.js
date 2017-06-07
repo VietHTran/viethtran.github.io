@@ -4,26 +4,57 @@ var HOME_URL="https://api.github.com/users/VietHTran/repos";
 var HOME_HTML_URL="https://www.github.com/VietHTran";
 
 var userHelp = function (argv) {
-    println("help - this help text");
-    println("cd [directory] - change current directory");
-    println("clear - clear screen");
-    println("contact - list of ways to contact me");
-    println("github - view my github profile");
-    println("github [username] - view a user github profile");
-    println("intro - print intro message");
-    println("linkedin - view my linkedin profile");
-    println("ls [directory] - view files in current or specified directory");
-    addTab(1);println("--created: view repositiory created time (home directory only)");
-    addTab(1);println("--desc: view repository description (home directory only)");
-    addTab(1);println("--lang: view repositiory main language (home directory only)");
-    addTab(1);println("--type: display file type");
-    addTab(1);println("--updated: view latest updated time (home directory only)");
-    println("pwd - view current directory");
-    println("who - about me");
-    addTab(1);println("--edu: my education information");
-    addTab(1);println("--name: my full name");
-    addTab(1);println("--work: my work experience");
-    println("xdg-open [file] - open a file in new tab");
+    //Check if there are other commands in argument
+    var isCommand=argv.length!==1;
+    if (!isCommand) {
+        println("help - this help text");
+        println("help [command] - show command instruction");
+    }
+    if (!isCommand || argv[1]==="help") {
+        println("Helpception");
+    }
+    if (!isCommand || argv[1]==="cd") {
+        println("cd [directory] - change current directory");
+    }
+    if (!isCommand || argv[1]==="clear") {
+        println("clear - clear screen");
+    }
+    if (!isCommand || argv[1]==="contact") {
+        println("contact - list of ways to contact me");
+    }
+    if (!isCommand || argv[1]==="github") {
+        println("github - view my github profile");
+        println("github [username] - view a user github profile");
+    }
+    if (!isCommand || argv[1]==="intro") {
+        println("intro - print intro message");
+    }
+    if (!isCommand || argv[1]==="linkedin") {
+        println("linkedin - view my linkedin profile");
+    }
+    if (!isCommand || argv[1]==="ls") {
+        println("ls [directory] - view files in current or specified directory");
+        addTab(1);println("--created: view repositiory created time (home directory only)");
+        addTab(1);println("--desc: view repository description (home directory only)");
+        addTab(1);println("--lang: view repositiory main language (home directory only)");
+        addTab(1);println("--type: display file type");
+        addTab(1);println("--updated: view latest updated time (home directory only)");
+    }
+    if (!isCommand || argv[1]==="pwd") {
+        println("pwd - view current directory");
+    }
+    if (!isCommand || argv[1]==="who") {
+        println("who - about me");
+        addTab(1);println("--edu: my education information");
+        addTab(1);println("--name: my full name");
+        addTab(1);println("--work: my work experience");
+    }
+    if (!isCommand || argv[1]==="xdg-open") {
+        println("xdg-open [file] - open a file in new tab");
+    }
+    if (!isCommand || PS_ARGS["head"].indexOf(argv[1])<=-1) {
+        println("No instructions for "+argv[1]);
+    }
 };
 
 var githubPage = function (argv) {
@@ -271,6 +302,7 @@ var commandsList={
 
 //List of all commands with flags 
 var PS_ARGS= {
+    "help": ["cd","clear","intro","github","contact","who","pwd","ls","linkedin","xdg-open"],
     "cd": [],
     "head" : ["cd","clear","help","intro","github","contact","who","pwd","ls","linkedin","xdg-open"],
     "ls": ["--created","--desc","--lang","--updated","--type"],
