@@ -5,13 +5,13 @@ var HOME_HTML_URL="https://www.github.com/VietHTran";
 
 var userHelp = function (argv) {
     //Check if there are other commands in argument
-    var isCommand=argv.length!==1;
+    var isCommand=argv.length>1;
     if (!isCommand) {
         println("help - this help text");
         println("help [command] - show command instruction");
     }
-    if (!isCommand || argv[1]==="help") {
-        println("Helpception");
+    if (isCommand && argv[1]==="help") {
+        println("help: Helpception");
     }
     if (!isCommand || argv[1]==="cd") {
         println("cd [directory] - change current directory");
@@ -52,8 +52,8 @@ var userHelp = function (argv) {
     if (!isCommand || argv[1]==="xdg-open") {
         println("xdg-open [file] - open a file in new tab");
     }
-    if (!isCommand || PS_ARGS["head"].indexOf(argv[1])<=-1) {
-        println("No instructions for "+argv[1]);
+    if (isCommand && PS_ARGS["head"].indexOf(argv[1])<=-1) {
+        println("help: No instructions for "+argv[1]);
     }
 };
 
@@ -302,7 +302,7 @@ var commandsList={
 
 //List of all commands with flags 
 var PS_ARGS= {
-    "help": ["cd","clear","intro","github","contact","who","pwd","ls","linkedin","xdg-open"],
+    "help": ["cd","clear","help","intro","github","contact","who","pwd","ls","linkedin","xdg-open"],
     "cd": [],
     "head" : ["cd","clear","help","intro","github","contact","who","pwd","ls","linkedin","xdg-open"],
     "ls": ["--created","--desc","--lang","--updated","--type"],
