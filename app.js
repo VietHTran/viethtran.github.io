@@ -1,3 +1,5 @@
+"use strict";
+
 var currentDir="~";
 var HOME="~";
 var HOME_URL="https://api.github.com/users/VietHTran/repos";
@@ -118,7 +120,7 @@ var ownerInfo = function (argv) {
 };
 
 var printWorkingDir = function (argv) {
-    filePath="VietHTran"+currentDir.substr(1);
+    var filePath="VietHTran"+currentDir.substr(1);
     println("https://www.github.com/"+filePath);
 };
 
@@ -337,7 +339,7 @@ function getAutoComplete(sub,stringlist) {
 function checkPoss() {
     var textBox=document.getElementById("commandInp");
     command=textBox.value;
-    argv=getArgs();
+    var argv=getArgs();
     if (argv.length===0) {
         return;
     } else {
@@ -554,9 +556,9 @@ function addTab(tabs) {
 }
 
 function getArgs() {
-    argv=[];
-    arr=command.split(" ");
-    for (i=0;i<arr.length;i++) {
+    var argv=[];
+    var arr=command.split(" ");
+    for (var i=0;i<arr.length;i++) {
         if (arr[i]!=="") {
             argv.push(arr[i]);
         }
@@ -565,7 +567,7 @@ function getArgs() {
 }
 
 function handleCommand() {
-    argv=getArgs();
+    var argv=getArgs();
     if (argv.length===0) {
         return;
     }
