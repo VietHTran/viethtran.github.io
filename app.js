@@ -486,7 +486,7 @@ function getContentURL(pathLst) {
 function getDirHierarchy(path) {
     if (path==="-1" || path.length===0) { return "-1"; }
     if (path.charAt(0)==="/") {
-        println("Root access denied");
+        println("jash: Root access denied");
         return "-1";
     }
     var dirs=path.split("/");
@@ -504,7 +504,7 @@ function getDirHierarchy(path) {
         switch (dirs[index]) {
             case "..":
                 if (navDir.length===1) {
-                    println("Root access denied");
+                    println("jash: Root access denied");
                     return "-1";
                 }
                 navDir.pop();
