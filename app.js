@@ -104,7 +104,7 @@ var ownerInfo = function (argv) {
     if (argv.indexOf("--work")>-1) {
         isPrinted=true;
         println("Work Experience:");
-        println("Mobile App Intern  (March 2017-Present)");
+        println("Mobile App Intern  (March 2017-June 2017)");
         println("Penn State Abington Campus");
         println("");
         println("Research Assistant (October 2016-Present)");
