@@ -1,5 +1,5 @@
 body {
-    background-color: #300a24;
+    background-color: #000000;
 }
 
 #dir {
@@ -11,9 +11,9 @@ body {
 }
 
 #stretchbox input {
-    background-color: #300a24;
+    background-color: #000;
     border: 0px solid;
-    color: white;
+    color: #00FF00;
     font-family: "Courier New"; 
     line-height: 130%;
     font-size: 18px;
@@ -34,7 +34,7 @@ p {
     margin-top: 16px;
     margin-bottom: 16px;
     margin-right: 16px;
-    color: white;
+    color: #00FF00;
     font-family: "Courier New"; 
     line-height: 130%;
     font-size: 18px;

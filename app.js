@@ -45,6 +45,10 @@ var userHelp = function (argv) {
     if (!isCommand || argv[1]==="pwd") {
         println("pwd - view current directory");
     }
+    if (!isCommand || argv[1]==="tc") {
+        println("tc - view my Topcoder profile");
+        println("tc [username] - view a user Topcoder profile");
+    }
     if (!isCommand || argv[1]==="who") {
         println("who - about me");
         addTab(1);println("--edu: my education information");
@@ -279,6 +283,17 @@ var linkedinPage = function (argv) {
     window.open("https://www.linkedin.com/in/viet-tran-8168a3122");
 };
 
+var topcoderPage = function (argv) {
+    var username="VietHTran";
+    for (var i=1; i<argv.length; i++) {
+        if (argv[i]!="") {
+            username=argv[i];
+            break;
+        }
+    }
+    window.open("https://www.topcoder.com/members/"+username);
+};
+
 var command; //Current command
 var commandHistory=[""];//List of enterred commands
 var histIndex=0; //Current index in the list
@@ -299,15 +314,17 @@ var commandsList={
     "pwd": printWorkingDir,      
     "ls": listFiles,            
     "linkedin": linkedinPage,         
+    "tc": topcoderPage, 
     "xdg-open": openFile,
 };
 
 //List of all commands with flags 
 var PS_ARGS= {
-    "help": ["cd","clear","help","intro","github","contact","who","pwd","ls","linkedin","xdg-open"],
+    "help": ["cd","clear","help","intro","github","contact","who","pwd","ls","linkedin", "tc", "xdg-open"],
     "cd": [],
-    "head" : ["cd","clear","help","intro","github","contact","who","pwd","ls","linkedin","xdg-open"],
+    "head" : ["cd","clear","help","intro","github","contact","who","pwd","ls","linkedin", "tc", "xdg-open"],
     "ls": ["--created","--desc","--lang","--updated","--type"],
+    "tc": [],
     "who": ["--edu","--name","--work"],
     "xdg-open": [],
 }
@@ -611,7 +628,7 @@ function onKeyDown(ev) {
         ev.preventDefault(); //Avoid trigger default browser shortcut
         clearOutput();
         textBox.focus();
-    } else if (ev.keyCode===9) {
+    } else if (ev.keyCode===9) { // Tab key pressed
         ev.preventDefault(); //Avoid trigger default browser shortcut
         checkPoss();
     }
