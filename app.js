@@ -88,11 +88,11 @@ var clearOutput = function (argv) {
 
 var contactInfo = function (argv) {
     println("Email: vht1@psu.edu");
-    println("Alternative email: trantechenterprise@gmail.com");
+    println("Alternative email: viethtran98@gmail.com");
     println("Linkedin: https://www.linkedin.com/in/viet-tran-8168a3122");
     println("Skype: viet.tran664");
     println("Github: VietHTran");
-    println("Devpost: VietHTran");
+    println("Topcoder: VietHTran");
 };
 
 var ownerInfo = function (argv) {
@@ -103,18 +103,24 @@ var ownerInfo = function (argv) {
     }
     if (argv.indexOf("--edu")>-1) {
         isPrinted=true;
-        println("Education: Penn State University    2016-2020    Computer Science    3.72/4.00");
+        println("Education: Penn State University    2016-2020    Computer Science    3.68/4.00");
     }
     if (argv.indexOf("--work")>-1) {
         isPrinted=true;
         println("Work Experience:");
-        println("Mobile App Intern  (March 2017-June 2017)");
+        println("Software Engineer Co-op (June 2019 - December 2019)");
+        println("VIAVI Solutions");
+        println("");
+        println("Software Development & Data Science Competitor (June 2017 - Present)");
+        println("Topcoder");
+        println("");
+        println("Mobile App Intern  (March 2017 - June 2017)");
         println("Penn State Abington Campus");
         println("");
-        println("Research Assistant (October 2016-Present)");
+        println("Research Assistant (October 2016 - May 2018)");
         println("Penn State Abington Campus");
         println("");
-        println("Computer Lab Assistant (January 2017-May 2017)");
+        println("Computer Lab Assistant (January 2017 - May 2017)");
         println("Penn State Abington Campus");
         println("");
     }
