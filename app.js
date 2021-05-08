@@ -88,7 +88,6 @@ var clearOutput = function (argv) {
 
 var contactInfo = function (argv) {
     println("Email: viet.h.tran@oracle.com");
-    println("Alternative email: viethtran98@gmail.com");
     println("Linkedin: https://www.linkedin.com/in/viet-tran-8168a3122");
     println("Github: VietHTran");
     println("Topcoder: VietHTran");
