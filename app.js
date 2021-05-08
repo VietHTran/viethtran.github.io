@@ -90,7 +90,6 @@ var contactInfo = function (argv) {
     println("Email: viet.h.tran@oracle.com");
     println("Alternative email: viethtran98@gmail.com");
     println("Linkedin: https://www.linkedin.com/in/viet-tran-8168a3122");
-    println("Zoom: https://oracle.zoom.us/j/6969691230")
     println("Github: VietHTran");
     println("Topcoder: VietHTran");
 };
@@ -108,9 +107,7 @@ var ownerInfo = function (argv) {
     if (argv.indexOf("--work")>-1) {
         isPrinted=true;
         println("Work Experience:");
-        println("Software Development Engineer I (August 2021 - Present)");
-        println("Amazon");
-        println("Part-time Cloud Engineer (January 2021 - August 2021)");
+        println("Part-time Cloud Engineer (January 2021 - Present)");
         println("Oracle");
         println("Cloud Engineer Co-op (June 2020 - January 2021)");
         println("Oracle");
